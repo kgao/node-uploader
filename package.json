@@ -1,0 +1,12 @@
+{
+  "name": "node-uploader",
+  "version": "0.0.1",
+  "description": "Mini async img uploader server",
+  "dependencies": {
+    "express": "~4.0.0",
+    "multer" : "0.1.6"
+  },
+  "scripts": {
+     "start": "node app"
+  }
+}
