@@ -1,5 +1,5 @@
 # node-uploader
-An async file uploader with Express + Nodejs.
+A nodejs processing file uploader.
 
 
 ## Get Start
