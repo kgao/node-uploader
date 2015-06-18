@@ -1,7 +1,8 @@
 var formidable = require('formidable'),
     http = require('http'),
     util = require('util'),
-    fs   = require('fs-extra');
+    fs   = require('fs-extra'),
+    msg  = '';
 
 http.createServer(function(req, res) {
   /* Process the form uploads */
@@ -32,9 +33,11 @@ http.createServer(function(req, res) {
 
         fs.copy(temp_path, new_location + file_name, function(err) {
             if (err) {
-                console.error(err);
+                msg = err;
+                console.error(msg);
             } else {
-                console.log("success!")
+                msg = 'Successfully uploaded: '+file_name+' to: '+new_location;
+                console.log(msg);
             }
         });
     });
@@ -49,7 +52,8 @@ http.createServer(function(req, res) {
     '<input type="text" name="title"><br>'+
     '<input type="file" name="upload" multiple="multiple"><br>'+
     '<input type="submit" value="Upload">'+
-    '</form>'
+    '</form>'+
+    '<p>'+msg+'</p>'
   );
 
 }).listen(7777, function(){
