@@ -1,39 +1,57 @@
-/*Define dependencies.*/
+var formidable = require('formidable'),
+    http = require('http'),
+    util = require('util'),
+    fs   = require('fs-extra');
 
-var express=require('express');
-var multer  = require('multer');
-var app=express();
-var done=false;
+http.createServer(function(req, res) {
+  /* Process the form uploads */
+  if (req.url == '/upload' && req.method.toLowerCase() == 'post') {
+    var form = new formidable.IncomingForm();
+    form.parse(req, function(err, fields, files) {
+      res.writeHead(200, {'content-type': 'text/plain'});
+      res.write('received upload:\n\n');
+      res.end(util.inspect({fields: fields, files: files}));
+    });
 
-/*Configure the multer.*/
+    form.on('progress', function(bytesReceived, bytesExpected) {
+        var percent_complete = (bytesReceived / bytesExpected) * 100;
+        console.log(percent_complete.toFixed(2));
+    });
 
-app.use(multer({ dest: 'Root/Uploads/',
-    rename: function (fieldname, filename) {
-        return filename + "_" + Date.now();
-    },
-    onFileUploadStart: function (file) {
-        console.log(file.originalname + ' is starting ...')
-    },
-    onFileUploadComplete: function (file) {
-        console.log(file.fieldname + ' uploaded to  ' + file.path)
-        done = true;
-    }
-}));
+    form.on('error', function(err) {
+        console.error(err);
+    });
 
-/*Handling routes.*/
+    form.on('end', function(fields, files) {
+        /* Temporary location of our uploaded file */
+        var temp_path = this.openedFiles[0].path;
+        /* The file name of the uploaded file */
+        var file_name = this.openedFiles[0].name;
+        /* Location where we want to copy the uploaded file */
+        var new_location = '/Users/kgao/workspace/NodeJSProjects/node-uploader/Uploads/';
 
-app.get('/',function(req,res){
-    res.send('Hello, Uploader!');
-});
+        fs.copy(temp_path, new_location + file_name, function(err) {
+            if (err) {
+                console.error(err);
+            } else {
+                console.log("success!")
+            }
+        });
+    });
 
-app.post('/upload',function(req,res){
-    if(done == true){
-        console.log(req.files);
-        res.end("File uploaded.");
-    }
-});
+    return;
+  }
 
-/*Run the server.*/
-app.listen(7777,function(){
-    console.log("Working on port 7777");
+  /* Display the file upload form. */
+  res.writeHead(200, {'content-type': 'text/html'});
+  res.end(
+    '<form action="/upload" enctype="multipart/form-data" method="post">'+
+    '<input type="text" name="title"><br>'+
+    '<input type="file" name="upload" multiple="multiple"><br>'+
+    '<input type="submit" value="Upload">'+
+    '</form>'
+  );
+
+}).listen(7777, function(){
+  console.log('Server is running on 7777.')
 });
